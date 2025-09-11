@@ -2,34 +2,21 @@
 #include <stdexcept>
 #include <string>
 
-// Include your hand-written base class header first
-#include "BaseEvent.hpp"
-
-// Then include the generated headers
 #include "ApiEvent.hpp"
 #include "ApiEventsList.hpp"
+#include "BaseEvent.hpp"
 #include "nlohmann/json.hpp"
 
-// Helper function to print details for a single event
 void print_event_details(const gcal::ApiEvent &event) {
   std::cout << "\n--- Event Details ---" << std::endl;
   std::cout << "  Summary: " << event.summary << std::endl;
   std::cout << "  ID: " << event.id << std::endl;
   std::cout << "  Status: " << event.status << std::endl;
-
-  // Accessing a nested object
   std::cout << "  Creator Email: " << event.creator.email << std::endl;
-
-  // Accessing another nested object
   std::cout << "  Start Time: " << event.start.dateTime << std::endl;
-
-  // Demonstrating a call to a hand-written method from the generated class
-  std::cout << "  Is All Day Event? " << (event.isAllDayEvent() ? "Yes" : "No")
-            << std::endl;
 }
 
 int main() {
-  // 1. A more realistic and detailed JSON string
   std::string json_string = R"({
         "kind": "calendar#events", "etag": "etag12345", "summary": "Project Apollo",
         "description": "Planning meeting for the next phase.", "updated": "2025-09-11T18:30:00Z", 
@@ -49,7 +36,6 @@ int main() {
     })";
 
   try {
-    // 2. Deserialization (JSON -> C++ Object)
     nlohmann::json j = nlohmann::json::parse(json_string);
     gcal::ApiEventsList event_list = j.get<gcal::ApiEventsList>();
 
@@ -58,18 +44,14 @@ int main() {
     std::cout << "Number of items: " << event_list.items.size() << std::endl;
 
     if (!event_list.items.empty()) {
-      // 3. Print details using the helper function
       print_event_details(event_list.items[0]);
 
-      // 4. Demonstrate Serialization (C++ Object -> JSON)
       std::cout << "\n--- Serializing Modified Event ---" << std::endl;
 
-      // Modify the C++ object
       gcal::ApiEvent modified_event = event_list.items[0];
       modified_event.summary = "Phase 1 Kick-off (Rescheduled)";
       modified_event.status = "tentative";
 
-      // The 'to_json' function is automatically called here
       nlohmann::json j_modified = modified_event;
 
       std::cout << j_modified.dump(4) << std::endl;

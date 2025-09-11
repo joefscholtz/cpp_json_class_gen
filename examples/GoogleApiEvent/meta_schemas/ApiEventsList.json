@@ -13,6 +13,6 @@
     "accessRole": { "type": "std::string" },
     "nextPageToken": { "type": "std::string" },
     "nextSyncToken": { "type": "std::string" },
-    "items": { "type": "std::vector<gcal::ApiEvent>" }
+    "items": "std::vector<gcal::ApiEvent>"
   }
 }
