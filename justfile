@@ -17,4 +17,4 @@ build: configure
     cmake --build --preset default --parallel
 
 run:
-  @echo "not implemented"
+  ./build/examples/GoogleApiEvent/GoogleApiEventExample

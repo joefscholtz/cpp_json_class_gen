@@ -1,0 +1,16 @@
+{
+  "kind": "class",
+  "struct_name": "ApiEvent",
+  "cpp_namespace": "gcal",
+  "is_final": true,
+  "base_classes": ["events::BaseEvent"],
+  "include_headers": ["string", "vector", "events/BaseEvent.h"],
+  "generate_constructor": "default",
+  "methods": ["bool isAllDayEvent() const"],
+  "schema": {
+    "iCalUID": "std::string",
+    "summary": "std::string",
+    "start_time": "std::string",
+    "end_time": "std::string"
+  }
+}
