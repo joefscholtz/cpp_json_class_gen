@@ -1,6 +1,6 @@
 # cpp_json_class_gen
 
-A powerful, compile-time code generation tool written in pure C++ that creates C++ classes and structs from simple JSON template files. This project provides a robust, workflow for build-time code generation, seamlessly integrated with CMake.
+Compile-time code generation C++ tool that creates C++ classes and structs from simple JSON template files. This project provides a robust, workflow for build-time code generation, seamlessly integrated with CMake.
 
 ## Features
 
