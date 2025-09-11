@@ -1,7 +1,20 @@
 cmake_minimum_required(VERSION 3.15)
 project(cpp_json_class_gen LANGUAGES CXX)
 
-find_package(nlohmann_json REQUIRED)
+find_package(nlohmann_json 3.11.0 QUIET)
+
+# If the package was NOT found (i.e., we are building standalone)...
+if(NOT nlohmann_json_FOUND)
+  # ...then we fall back to fetching it ourselves.
+  message(STATUS "nlohmann_json not found. Fetching from source.")
+  include(FetchContent)
+  FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        v3.11.3
+  )
+  FetchContent_MakeAvailable(nlohmann_json)
+endif()
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -52,5 +65,5 @@ function(generate_class_from_json TARGET_NAME)
   target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 endfunction()
 
-add_subdirectory(examples)
+add_subdirectory(examples/GoogleApiEvent)
 

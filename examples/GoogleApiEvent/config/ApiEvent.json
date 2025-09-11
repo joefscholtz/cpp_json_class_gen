@@ -4,7 +4,7 @@
   "cpp_namespace": "gcal",
   "is_final": true,
   "base_classes": ["events::BaseEvent"],
-  "include_headers": ["string", "vector", "events/BaseEvent.h"],
+  "include_headers": ["string", "vector", "BaseEvent.hpp"],
   "generate_constructor": "default",
   "methods": ["bool isAllDayEvent() const"],
   "schema": {

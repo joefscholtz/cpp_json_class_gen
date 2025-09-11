@@ -1,9 +1,9 @@
 {
   "kind": "struct",
-  "struct_name": "EventsList",
+  "struct_name": "ApiEventsList",
   "cpp_namespace": "gcal",
-  "include_headers": ["string", "vector", "DefaultReminder.h", "ApiEvent.h"],
-  "fields": {
+  "include_headers": ["string", "vector", "ApiEvent.hpp"],
+  "schema": {
     "kind": "std::string",
     "etag": "std::string",
     "summary": "std::string",
