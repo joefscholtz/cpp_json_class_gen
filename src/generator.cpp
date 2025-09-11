@@ -20,6 +20,23 @@ std::string build_inheritance_string(const nlohmann::json &meta_schema) {
   return inheritance_str;
 }
 
+std::string get_default_value(const std::string &cpp_type) {
+  if (cpp_type == "std::string") {
+    return "\"\"";
+  }
+  if (cpp_type == "int" || cpp_type == "uint64_t") {
+    return "0";
+  }
+  if (cpp_type == "bool") {
+    return "false";
+  }
+  // For complex types like std::vector, return an empty initializer
+  if (cpp_type.rfind("std::vector", 0) == 0) {
+    return "{}";
+  }
+  return "{}"; // Default for unknown types
+}
+
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " <input_json> <output_header>"
@@ -96,10 +113,13 @@ int main(int argc, char *argv[]) {
 
   // --- JSON Serialization ---
   out_file << "// JSON Serialization Functions\n";
-  out_file << "inline void to_json(nlohmann::json& j, const " << struct_name
+  out_file << "inline void from_json(const nlohmann::json& j, " << struct_name
            << "& obj) {\n";
-  for (auto &[name, type] : meta_schema.at("schema").items()) {
-    out_file << "    j[\"" << name << "\"] = obj." << name << ";\n";
+  for (auto &[name, type_json] : meta_schema.at("schema").items()) {
+    std::string type_str = type_json.get<std::string>();
+    // Use .value() to safely get the key or a default value
+    out_file << "    obj." << name << " = j.value(\"" << name << "\", "
+             << get_default_value(type_str) << ");\n";
   }
   out_file << "}\n\n";
 
