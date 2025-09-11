@@ -100,6 +100,11 @@ In your project's CMakeLists.txt, simply call the generate_class_from_json funct
 examples/GoogleApiEvent/CMakeLists.txt
 
 ```CMake
+cmake_minimum_required(VERSION 3.15)
+project(GoogleApiEventExampleProject LANGUAGES CXX)
+
+find_package(cpp_json_class_gen)
+
 # Define your application's executable
 add_executable(GoogleApiEventExample src/main.cpp)
 
