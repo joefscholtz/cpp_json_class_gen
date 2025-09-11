@@ -11,8 +11,8 @@ target_include_directories(GoogleApiEventExample PRIVATE include)
 # Pass the target name and a list of all the JSON configs it needs.
 generate_class_from_json(GoogleApiEventExample
   CONFIGS
-    config/ApiEvent.json
-    config/ApiEventsList.json
+    meta_schemas/ApiEvent.json
+    meta_schemas/ApiEventsList.json
 )
 
 # Link to any libraries needed at runtime (like nlohmann for parsing)
