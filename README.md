@@ -78,16 +78,22 @@ config/ApiEventsList.json:
 
 ```bash
 {
-"kind": "struct",
-"struct_name": "ApiEventsList",
-"cpp_namespace": "gcal",
-"include_headers": ["string", "vector", "ApiEvent.hpp"],
-"schema": {
-"kind": "std::string",
-"etag": "std::string",
-"summary": "std::string",
-"items": "std::vector<gcal::ApiEvent>"
-}
+  "kind": "struct",
+  "struct_name": "ApiEventsList",
+  "cpp_namespace": "gcal",
+  "include_headers": ["string", "vector", "ApiEvent.hpp"],
+  "schema": {
+    "kind": "std::string",
+    "etag": "std::string",
+    "summary": "std::string",
+    "description": "std::string",
+    "updated": "std::string",
+    "timeZone": "std::string",
+    "accessRole": "std::string",
+    "nextPageToken": "std::string",
+    "nextSyncToken": "std::string",
+    "items": "std::vector<gcal::ApiEvent>"
+  }
 }
 ```
 
