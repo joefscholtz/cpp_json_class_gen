@@ -28,20 +28,16 @@ Bash
 
 ```bash
 # Clone the repository
-
 git clone https://github.com/your-username/cpp_json_class_gen.git
 cd cpp_json_class_gen
 
 # Configure the project using a CMake preset
-
 cmake --preset default
 
 # Build the generator and all examples
-
 cmake --build --preset default --parallel
 
 # Run the example
-
 ./build/examples/GoogleApiEvent/GoogleApiEventExample
 
 ```
