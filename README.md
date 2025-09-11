@@ -101,23 +101,19 @@ examples/GoogleApiEvent/CMakeLists.txt
 
 ```CMake
 # Define your application's executable
-
 add_executable(GoogleApiEventExample src/main.cpp)
 
 # Add your project's own include directories
-
 target_include_directories(GoogleApiEventExample PRIVATE include)
 
 # Call the generator function for your target, listing all required schemas
-
 generate_class_from_json(GoogleApiEventExample
-CONFIGS
-config/ApiEvent.json
-config/ApiEventsList.json
+  CONFIGS
+    config/ApiEvent.json
+    config/ApiEventsList.json
 )
 
 # Link to any necessary libraries
-
 target_link_libraries(GoogleApiEventExample PRIVATE nlohmann_json::nlohmann_json)
 ```
 
