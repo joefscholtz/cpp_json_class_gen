@@ -1,18 +1,18 @@
 {
-  "kind": "struct",
+  "kind": "class",
   "struct_name": "ApiEventsList",
   "cpp_namespace": "gcal",
   "include_headers": ["string", "vector", "ApiEvent.hpp"],
   "schema": {
-    "kind": "std::string",
-    "etag": "std::string",
-    "summary": "std::string",
-    "description": "std::string",
-    "updated": "std::string",
-    "timeZone": "std::string",
-    "accessRole": "std::string",
-    "nextPageToken": "std::string",
-    "nextSyncToken": "std::string",
-    "items": "std::vector<gcal::ApiEvent>"
+    "kind": { "type": "std::string" },
+    "etag": { "type": "std::string" },
+    "summary": { "type": "std::string" },
+    "description": { "type": "std::string" },
+    "updated": { "type": "std::string" },
+    "timeZone": { "type": "std::string" },
+    "accessRole": { "type": "std::string" },
+    "nextPageToken": { "type": "std::string" },
+    "nextSyncToken": { "type": "std::string" },
+    "items": { "type": "std::vector<gcal::ApiEvent>" }
   }
 }
