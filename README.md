@@ -159,10 +159,10 @@ The following keys are supported in the JSON template files:
 |Key |Type |Required? |Description |
 |----|-----|----------|------------|
 |kind |string |Optional |Specifies class or struct. Defaults to struct.|
-|struct_name string Required The name of the C++ class/struct to be generated.|
-|cpp_namespace string Required The C++ namespace to enclose the generated type in.|
-|is_final boolean Optional If true, adds the final specifier to the class.|
-|base_classes array of strings Optional A list of classes to inherit from (e.g., "MyBaseClass").|
-|include_headers array of strings Required A list of headers to #include in the generated file.|
-|methods array of strings Optional A list of method declarations to add to the class.|
-|schema object Required A key-value map where the key is the member variable name and the value is its C++ type as a |string.|
+|struct_name |string |Required |The name of the C++ class/struct to be generated.|
+|cpp_namespace |string |Required |The C++ namespace to enclose the generated type in.|
+|is_final |boolean |Optional |If true, adds the final specifier to the class.|
+|base_classes |array of strings |Optional |A list of classes to inherit from (e.g., "MyBaseClass").|
+|include_headers |array of strings |Required |A list of headers to #include in the generated file.|
+|methods |array of strings |Optional |A list of method declarations to add to the class.|
+|schema |object |Required |A key-value map where the key is the member variable name and the value is its C++ type as a string.|
