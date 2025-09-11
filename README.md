@@ -76,7 +76,7 @@ config/ApiEvent.json:
 
 config/ApiEventsList.json:
 
-```bash
+```JSON
 {
   "kind": "struct",
   "struct_name": "ApiEventsList",
