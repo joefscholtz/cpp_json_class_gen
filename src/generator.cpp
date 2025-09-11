@@ -14,7 +14,7 @@ public:
     out_file_ << "#pragma once\n\n";
 
     for (const auto &header : root_schema.at("include_headers")) {
-      out_file_ << "#include \"" << header.get<std::string>() << "\"\n";
+      out_file_ << "#include <" << header.get<std::string>() << ">\n";
     }
     out_file_ << "#include <nlohmann/json.hpp>\n\n";
 
@@ -26,22 +26,6 @@ private:
   std::ofstream &out_file_;
   std::set<std::string> generated_types_;
 
-  // Helper to build the inheritance string
-  std::string build_inheritance_string(const nlohmann::json &schema) {
-    if (!schema.contains("base_classes"))
-      return "";
-    std::string inheritance_str = " : ";
-    bool first = true;
-    for (const auto &base : schema["base_classes"]) {
-      if (!first)
-        inheritance_str += ", ";
-      inheritance_str += "public " + base.get<std::string>();
-      first = false;
-    }
-    return inheritance_str;
-  }
-
-  // Helper to generate properly typed default values
   std::string get_default_value(const std::string &cpp_type) {
     if (cpp_type == "std::string")
       return "\"\"";
@@ -49,78 +33,65 @@ private:
       return "0";
     if (cpp_type == "bool")
       return "false";
-    if (cpp_type.rfind("std::vector", 0) == 0) {
+    if (cpp_type.rfind("std::vector", 0) == 0)
       return cpp_type + "{}";
-    }
     return "{}";
   }
 
-  // Main recursive method with full logic restored
   void generate_struct_from_schema(const nlohmann::json &schema,
                                    const std::string &default_namespace) {
     std::string struct_name = schema.at("struct_name").get<std::string>();
     if (generated_types_.count(struct_name))
       return;
 
-    // Recursive call for nested types (if you add them later)
-    // ...
+    // 1. Recursively generate any nested types FIRST.
+    if (schema.contains("schema")) {
+      for (const auto &field_def : schema.at("schema").items()) {
+        if (field_def.value().contains("schema")) {
+          std::string nested_ns =
+              field_def.value().value("cpp_namespace", default_namespace);
+          generate_struct_from_schema(field_def.value().at("schema"),
+                                      nested_ns);
+        }
+      }
+    }
 
+    // 2. Generate the current struct.
     std::string kind = schema.value("kind", "struct");
     std::string cpp_namespace =
         schema.value("cpp_namespace", default_namespace);
-    bool is_final = schema.value("is_final", false);
 
     out_file_ << "namespace " << cpp_namespace << " {\n\n";
-
-    // --- Class/Struct Definition ---
-    out_file_ << kind << " " << struct_name;
-    if (is_final)
-      out_file_ << " final";
-    out_file_ << build_inheritance_string(schema) << " {\n";
-
+    out_file_ << kind << " " << struct_name << " {\n";
     if (kind == "class")
       out_file_ << "public:\n";
 
-    // --- Constructors ---
-    if (schema.contains("generate_constructor")) {
-      std::string ctor_type = schema["generate_constructor"];
-      if (ctor_type == "default") {
-        out_file_ << "    " << struct_name << "() = default;\n";
+    if (schema.contains("schema")) {
+      for (auto &[name, definition] : schema.at("schema").items()) {
+        out_file_ << "    " << definition.at("type").get<std::string>() << " "
+                  << name << ";\n";
       }
     }
-
-    // --- Member Variables ---
-    out_file_ << "\n    // Member Variables\n";
-    for (auto &[name, type] : schema.at("schema").items()) {
-      out_file_ << "    " << type.get<std::string>() << " " << name << ";\n";
-    }
-
-    // --- Custom Method Declarations ---
-    if (schema.contains("methods")) {
-      out_file_ << "\n    // Custom Method Declarations\n";
-      for (const auto &method : schema["methods"]) {
-        out_file_ << "    " << method.get<std::string>() << ";\n";
-      }
-    }
-
     out_file_ << "};\n\n";
 
-    // --- JSON Serialization ---
-    out_file_ << "// JSON Serialization (to JSON)\n";
+    // Generate JSON serialization functions
     out_file_ << "inline void to_json(nlohmann::json& j, const " << struct_name
               << "& obj) {\n";
-    for (auto &[name, type] : schema.at("schema").items()) {
-      out_file_ << "    j[\"" << name << "\"] = obj." << name << ";\n";
+    if (schema.contains("schema")) {
+      for (auto &[name, definition] : schema.at("schema").items()) {
+        out_file_ << "    j[\"" << name << "\"] = obj." << name << ";\n";
+      }
     }
     out_file_ << "}\n\n";
 
-    out_file_ << "// JSON Deserialization (from JSON)\n";
     out_file_ << "inline void from_json(const nlohmann::json& j, "
               << struct_name << "& obj) {\n";
-    for (auto &[name, type_json] : schema.at("schema").items()) {
-      std::string type_str = type_json.get<std::string>();
-      out_file_ << "    obj." << name << " = j.value(\"" << name << "\", "
-                << get_default_value(type_str) << ");\n";
+    if (schema.contains("schema")) {
+      for (auto &[name, definition] : schema.at("schema").items()) {
+        std::string type_str = definition.at("type").get<std::string>();
+        out_file_ << "    obj." << name << " = j.value(\"" << name << "\", "
+                  << get_default_value(type_str) << ");\n";
+      }
     }
     out_file_ << "}\n\n";
 
@@ -131,7 +102,6 @@ private:
 };
 
 int main(int argc, char *argv[]) {
-  // This main function is correct and does not need changes.
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " <input_json> <output_header>"
               << std::endl;
