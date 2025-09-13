@@ -6,6 +6,9 @@
   "base_classes": ["events::BaseEvent"],
   "include_headers": ["string", "vector", "BaseEvent.hpp"],
   "generate_constructor": "default",
+  "base_constructor_args": {
+    "BaseEvent": "std::string(\"ApiEvent\")"
+  },
   "schema": {
     "kind": "std::string",
     "etag": "std::string",

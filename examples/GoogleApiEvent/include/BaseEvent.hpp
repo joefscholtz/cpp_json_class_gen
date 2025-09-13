@@ -4,10 +4,11 @@ namespace events {
 
 class BaseEvent {
 public:
-  BaseEvent() {}
+  BaseEvent(std::string example_attribute = std::string("base class value"))
+      : _example_attribute(example_attribute) {}
   virtual ~BaseEvent() = default;
 
-  std::string _base_class_atr = "value";
+  std::string _example_attribute;
 };
 
 } // namespace events

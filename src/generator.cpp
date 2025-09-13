@@ -80,6 +80,21 @@ private:
 
     return inheritance_str;
   }
+  std::string build_initializer_list(const nlohmann::json &schema) {
+    if (!schema.contains("base_constructor_args")) {
+      return "";
+    }
+    std::string list_str = " : ";
+    bool is_first = true;
+    for (auto &[base_class, args] : schema["base_constructor_args"].items()) {
+      if (!is_first) {
+        list_str += ", ";
+      }
+      list_str += base_class + "(" + args.get<std::string>() + ")";
+      is_first = false;
+    }
+    return list_str;
+  }
 
   // The main recursive method
   void generate_struct_from_schema(const nlohmann::json &schema,
@@ -92,49 +107,69 @@ private:
                 << e.what() << std::endl;
       throw;
     }
-
     if (generated_types_.count(struct_name))
       return;
 
-    // Recursively generate any nested types first
+    // 1. Recursively generate any nested types FIRST to ensure they are fully
+    // defined.
     if (schema.contains("schema")) {
       for (auto &[name, definition] : schema.at("schema").items()) {
         if (definition.is_object() && definition.contains("schema")) {
-          // Nested types are generated in the same namespace as their parent.
           generate_struct_from_schema(definition.at("schema"),
                                       current_namespace);
         }
       }
     }
 
-    // Generate definition.
+    // 2. Generate the current struct's definition.
     std::string kind = schema.value("kind", "struct");
     bool is_final = schema.value("is_final", false);
 
     out_file_ << kind << " " << struct_name;
     if (is_final)
       out_file_ << " final";
-
     out_file_ << build_inheritance_string(schema) << " {\n";
-
     if (kind == "class")
       out_file_ << "public:\n";
 
+    if (schema.contains("generate_constructor")) {
+      std::string ctor_type = schema["generate_constructor"];
+      if (ctor_type == "default") {
+        out_file_ << "    " << struct_name << "()"
+                  << build_initializer_list(schema) << " {}\n";
+      }
+    }
+
+    out_file_ << "\n    // Member Variables\n";
     if (schema.contains("schema")) {
       for (auto &[name, definition] : schema.at("schema").items()) {
-        std::string type_str;
-        if (definition.is_object()) {
-          type_str = definition.at("type").get<std::string>();
-        } else {
-          type_str = definition.get<std::string>();
+        try {
+          std::string type_str;
+          if (definition.is_object()) {
+            type_str = definition.at("type").get<std::string>();
+          } else {
+            type_str = definition.get<std::string>();
+          }
+          out_file_ << "    " << type_str << " " << name << ";\n";
+        } catch (const nlohmann::json::exception &e) {
+          std::cerr << "\nERROR processing schema for struct '" << struct_name
+                    << "':\n";
+          std::cerr << "Field '" << name
+                    << "' is malformed. Details: " << e.what() << "\n"
+                    << std::endl;
+          throw;
         }
-        out_file_ << "    " << type_str << " " << name << ";\n";
+      }
+    }
+    if (schema.contains("methods")) {
+      out_file_ << "\n    // Custom Method Declarations\n";
+      for (const auto &method : schema["methods"]) {
+        out_file_ << "    " << method.get<std::string>() << ";\n";
       }
     }
     out_file_ << "};\n\n";
 
-    // Serialization
-    out_file_ << "// JSON Serialization for " << struct_name << "\n";
+    // 3. Generate serialization functions.
     out_file_ << "inline void to_json(nlohmann::json& j, const " << struct_name
               << "& obj) {\n";
     if (schema.contains("schema")) {
@@ -144,7 +179,6 @@ private:
     }
     out_file_ << "}\n\n";
 
-    // Deserialization
     out_file_ << "inline void from_json(const nlohmann::json& j, "
               << struct_name << "& obj) {\n";
     if (schema.contains("schema")) {
@@ -156,7 +190,6 @@ private:
           type_str = definition.get<std::string>();
         }
 
-        // Checks if the key exists and is not null before converting.
         out_file_ << "    if (j.contains(\"" << name << "\") && !j.at(\""
                   << name << "\").is_null()) {\n";
         out_file_ << "        j.at(\"" << name << "\").get_to(obj." << name
