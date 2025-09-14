@@ -1,4 +1,5 @@
 #include "nlohmann/json.hpp"
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -33,6 +34,48 @@ public:
 private:
   std::ofstream &out_file_;
   std::set<std::string> generated_types_;
+
+  /**
+   * @brief Sanitizes a string to make it a valid C++ identifier.
+   *
+   * This function replaces any invalid characters with underscores and ensures
+   * the identifier does not start with a digit. For example:
+   * "events::BaseApiEvent" -> "events_BaseApiEvent"
+   * "std::vector<MyType>"        -> "std_vector_MyType_"
+   * "123_Test"                   -> "_123_Test"
+   * * @param input The string to sanitize.
+   * @return A valid C++ identifier string.
+   */
+  std::string sanitize_for_identifier(const std::string &input) {
+    if (input.empty()) {
+      return "_"; // Return a default valid identifier
+    }
+
+    std::string result;
+    result.reserve(input.length()); // Pre-allocate memory for efficiency
+
+    // Handle the first character separately to enforce the "no starting digit"
+    // rule.
+    if (std::isalpha(input[0]) || input[0] == '_') {
+      result += input[0];
+    } else {
+      result +=
+          '_'; // Replace any other invalid start character with an underscore
+    }
+
+    // Handle the rest of the string.
+    for (size_t i = 1; i < input.length(); ++i) {
+      // Append the character if it's a letter, number, or underscore.
+      // Otherwise, replace it with an underscore.
+      if (std::isalnum(input[i]) || input[i] == '_') {
+        result += input[i];
+      } else {
+        result += '_';
+      }
+    }
+
+    return result;
+  }
 
   std::string get_default_value(const std::string &cpp_type) {
     if (cpp_type == "std::string")
@@ -167,7 +210,39 @@ private:
         out_file_ << "    " << method.get<std::string>() << ";\n";
       }
     }
-    out_file_ << "};\n\n";
+
+    if (schema.value("generate_clone_method", false)) {
+      if (schema.contains("base_classes") &&
+          !schema.at("base_classes").empty()) {
+
+        // --- 1. Generate the standard 'clone()' override for the PRIMARY base
+        // class ---
+        std::string primary_base_name =
+            schema["base_classes"][0].get<std::string>();
+        out_file_ << "\n    // Polymorphic clone method (override)\n";
+        out_file_ << "    std::unique_ptr<" << primary_base_name
+                  << "> clone() const override {\n";
+        out_file_ << "        return std::make_unique<" << struct_name
+                  << ">(*this);\n";
+        out_file_ << "    }\n";
+
+        // --- 2. Generate uniquely named clone methods for ALL base classes ---
+        for (const auto &base : schema["base_classes"]) {
+          std::string base_class_name = base.get<std::string>();
+          std::string sanitized_name = sanitize_for_identifier(base_class_name);
+
+          out_file_ << "\n    // Explicitly named clone method for "
+                    << base_class_name << "\n";
+          out_file_ << "    std::unique_ptr<" << base_class_name
+                    << "> clone_as_" << sanitized_name << "() const {\n";
+          out_file_ << "        return std::make_unique<" << struct_name
+                    << ">(*this);\n";
+          out_file_ << "    }\n";
+        }
+      }
+    }
+
+    out_file_ << "};\n\n"; // End class
 
     // 3. Generate serialization functions.
     out_file_ << "inline void to_json(nlohmann::json& j, const " << struct_name

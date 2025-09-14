@@ -44,11 +44,45 @@ int main() {
     std::cout << "Number of items: " << event_list.items.size() << std::endl;
 
     if (!event_list.items.empty()) {
-      print_event_details(event_list.items[0]);
+      // Get a reference to the original event
+      gcal::ApiEvent &original_event = event_list.items[0];
+      print_event_details(original_event);
+
+      // --- TESTING THE CLONE METHOD ---
+      std::cout << "\n--- Testing Polymorphic Clone ---" << std::endl;
+
+      // 1. Create a pointer to the base class of the original event.
+      events::BaseApiEvent *base_ptr_to_original = &original_event;
+
+      // 2. Call clone() to create a new, deep copy.
+      //    The result is a smart pointer to the base class.
+      std::unique_ptr<events::BaseApiEvent> cloned_base_ptr =
+          base_ptr_to_original->clone();
+
+      std::cout << "Successfully created a clone." << std::endl;
+
+      // 3. To use the clone as a GCalApiEvent, you must dynamic_cast it.
+      gcal::ApiEvent *cloned_gcal_ptr =
+          dynamic_cast<gcal::ApiEvent *>(cloned_base_ptr.get());
+
+      if (cloned_gcal_ptr) {
+        // 4. Modify the clone.
+        std::cout << "Modifying the clone's summary..." << std::endl;
+        cloned_gcal_ptr->summary = "CLONED - Planning Session";
+
+        // 5. Show that the original and the clone are now different.
+        std::cout << "\nOriginal Event Summary: " << original_event.summary
+                  << std::endl;
+        std::cout << "Cloned Event Summary:   " << cloned_gcal_ptr->summary
+                  << std::endl;
+      } else {
+        std::cerr << "Error: dynamic_cast to GCalApiEvent failed!" << std::endl;
+      }
+      print_event_details(original_event);
 
       std::cout << "\n--- Serializing Modified Event ---" << std::endl;
 
-      gcal::ApiEvent modified_event = event_list.items[0];
+      gcal::ApiEvent modified_event = original_event;
       modified_event.summary = "Phase 1 Kick-off (Rescheduled)";
       modified_event.status = "tentative";
 

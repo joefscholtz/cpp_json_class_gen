@@ -6,6 +6,7 @@
   "base_classes": ["events::BaseEvent"],
   "include_headers": ["string", "vector", "BaseEvent.hpp"],
   "generate_constructor": "default",
+  "generate_clone_method": true,
   "base_constructor_args": {
     "BaseEvent": "std::string(\"ApiEvent\")"
   },
