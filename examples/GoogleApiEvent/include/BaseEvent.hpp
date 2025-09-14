@@ -11,7 +11,7 @@ public:
 
   virtual ~BaseEvent() = default;
 
-  // Force all derived classes to implement clone method it.
+  // Force all derived classes to implement clone (deep_copy) method it.
   virtual std::unique_ptr<BaseEvent> clone() const = 0;
 
   const std::string &get_example_attribute() const {
