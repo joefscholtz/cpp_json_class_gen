@@ -124,19 +124,40 @@ private:
     return inheritance_str;
   }
   std::string build_initializer_list(const nlohmann::json &schema) {
-    if (!schema.contains("base_constructor_args")) {
+    if (!schema.contains("base_constructor_args") ||
+        !schema.contains("base_classes")) {
       return "";
     }
+
     std::string list_str = " : ";
     bool is_first = true;
-    for (auto &[base_class, args] : schema["base_constructor_args"].items()) {
-      if (!is_first) {
-        list_str += ", ";
+
+    // Iterate through the BASE_CLASSES array to get the fully qualified name
+    for (const auto &base : schema["base_classes"]) {
+      std::string base_name_full = base.get<std::string>();
+
+      // Find the short name (without namespace) to use as a key
+      std::string base_name_short = base_name_full;
+      size_t pos = base_name_full.rfind("::");
+      if (pos != std::string::npos) {
+        base_name_short = base_name_full.substr(pos + 1);
       }
-      list_str += base_class + "(" + args.get<std::string>() + ")";
-      is_first = false;
+
+      // Check if there are args for this base class
+      if (schema["base_constructor_args"].contains(base_name_short)) {
+        if (!is_first) {
+          list_str += ", ";
+        }
+        // Use the FULL name in the initializer list
+        list_str += base_name_full + "(" +
+                    schema["base_constructor_args"][base_name_short]
+                        .get<std::string>() +
+                    ")";
+        is_first = false;
+      }
     }
-    return list_str;
+
+    return is_first ? "" : list_str;
   }
 
   // The main recursive method

@@ -52,11 +52,11 @@ int main() {
       std::cout << "\n--- Testing Polymorphic Clone ---" << std::endl;
 
       // 1. Create a pointer to the base class of the original event.
-      events::BaseApiEvent *base_ptr_to_original = &original_event;
+      events::BaseEvent *base_ptr_to_original = &original_event;
 
       // 2. Call clone() to create a new, deep copy.
       //    The result is a smart pointer to the base class.
-      std::unique_ptr<events::BaseApiEvent> cloned_base_ptr =
+      std::unique_ptr<events::BaseEvent> cloned_base_ptr =
           base_ptr_to_original->clone();
 
       std::cout << "Successfully created a clone." << std::endl;
@@ -78,11 +78,11 @@ int main() {
       } else {
         std::cerr << "Error: dynamic_cast to GCalApiEvent failed!" << std::endl;
       }
-      print_event_details(original_event);
+      print_event_details(event_list.items[0]);
 
       std::cout << "\n--- Serializing Modified Event ---" << std::endl;
 
-      gcal::ApiEvent modified_event = original_event;
+      gcal::ApiEvent modified_event = event_list.items[0];
       modified_event.summary = "Phase 1 Kick-off (Rescheduled)";
       modified_event.status = "tentative";
 

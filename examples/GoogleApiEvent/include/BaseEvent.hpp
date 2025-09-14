@@ -4,8 +4,6 @@
 
 namespace events {
 
-namespace events {
-
 class BaseEvent {
 public:
   BaseEvent(std::string example_attribute = "base class value")
